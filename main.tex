@@ -61,49 +61,35 @@ An ancilla provides temporary workspace rather than part of the intended
 output. We distinguish its initialization from the condition required for
 safe reuse~\cite{gidney,dirty}.
 
-\begin{definition}[Clean ancilla and clean-ancilla safety]
-A clean ancilla register is initialized to the known state
-$\lvert 0^m\rangle_A$, uncorrelated with the remaining system.
-We say that $U$ safely returns this register if there exists a unitary
-$V$ on $\mathcal H_D$ such that, for every
-$\lvert\psi\rangle_D\in\mathcal H_D$,
+\begin{definition}[Clean-ancilla safety]
+The ancilla register $A$ starts in $\lvert0^m\rangle_A$ and must return
+to $\lvert0^m\rangle_A$ for every data input.
+Formally, $U$ satisfies clean-ancilla safety if there exists a unitary $V$
+on $\mathcal H_D$ such that, for every state $\lvert\psi\rangle_D$,
 \begin{equation}\label{eq:clean-safety}
- U(\lvert\psi\rangle_D\otimes\lvert 0^m\rangle_A)
- =V\lvert\psi\rangle_D\otimes\lvert 0^m\rangle_A.
+ U(\lvert\psi\rangle_D\otimes\lvert0^m\rangle_A)
+ =V\lvert\psi\rangle_D\otimes\lvert0^m\rangle_A.
 \end{equation}
 \end{definition}
 
-The initialization alone makes the ancilla clean; returning it to zero
-is the additional safety property considered here.
-Equation~\eqref{eq:clean-safety} constrains $U$ only on the subspace
-$\mathcal H_D\otimes\operatorname{span}\{\lvert0^m\rangle_A\}$.
-
-\begin{definition}[Dirty ancilla and dirty-ancilla safety]
-A dirty ancilla register is borrowed in an arbitrary unknown state,
-possibly entangled with other registers.
-We say that $U$ safely returns this register if there exists a unitary
-$V$ on $\mathcal H_D$ such that
+\begin{definition}[Dirty-ancilla safety]
+The ancilla register $A$ starts in an arbitrary unknown state
+$\lvert\phi\rangle_A$ and must return to the same state.
+Formally, $U$ satisfies dirty-ancilla safety if there exists a unitary $V$
+on $\mathcal H_D$ such that, for every pair of states
+$\lvert\psi\rangle_D$ and $\lvert\phi\rangle_A$,
 \begin{equation}\label{eq:dirty-safety}
- U=V\otimes I_A.
-\end{equation}
-Equivalently, the same $V$ satisfies
-\[
  U(\lvert\psi\rangle_D\otimes\lvert\phi\rangle_A)
  =V\lvert\psi\rangle_D\otimes\lvert\phi\rangle_A.
-\]
-for all $\lvert\psi\rangle_D$ and $\lvert\phi\rangle_A$.
+\end{equation}
+The same $V$ must work for all inputs; in particular, it cannot depend on
+$\lvert\phi\rangle_A$.
 \end{definition}
 
-By linearity, this condition also covers entangled inputs.
-For any untouched reference register $E$ and density operator $\rho_{DAE}$,
-\[
- \begin{aligned}
- &(U\otimes I_E)\rho_{DAE}(U^\dagger\otimes I_E)
- \\ &\quad=(V\otimes I_A\otimes I_E)\rho_{DAE}
-  (V^\dagger\otimes I_A\otimes I_E).
- \end{aligned}
-\]
-In particular, the joint reduced state of $AE$ is preserved.
+By linearity, the dirty-ancilla condition also covers inputs in which
+the ancilla is entangled with other registers, including an untouched
+external system.
+
 Restoring only the basis values of $A$ is insufficient:
 $I_D\otimes Z_A$ leaves those values unchanged but maps
 $\lvert+\rangle_A$ to $\lvert-\rangle_A$.
