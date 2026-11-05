@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 1a2f5ee5fb42727b8d249a2cee67a170d8851f93
+          ref: 3066d2da33746a91e8e00782d6483c91264fd174
           persist-credentials: false
       - name: Apply only approved files with conflict protection
         env:
@@ -42,12 +42,12 @@ jobs:
           before="$(git -C "$target" rev-parse HEAD)"
           branch="$(git -C "$target" symbolic-ref --short HEAD)"
           echo "Overleaf before: $before"
-          test "$before" = e884f9fb043036e7ee730f13d40d8f2a05c9fdc7 || { echo "::error::Overleaf revision changed; stopping."; exit 1; }
+          test "$before" = d823b9cae8845953e5abcba6d8afcca6e19aa8eb || { echo "::error::Overleaf revision changed; stopping."; exit 1; }
           test -f "$target/main.tex" && test ! -L "$target/main.tex"
           old="$(git -C "$target" hash-object main.tex)"
           approved="$(git hash-object main.tex)"
           case "$old" in
-            20a7fc7248df8b0c6dfd3df69f32936388f440cb) ;;
+            9a1a1f5a8840f3156b615b390792a0dfba1f8e3e) ;;
             "$approved") ;;
             *) echo "::error::Overleaf main.tex has concurrent or unreviewed changes. No files pushed."; exit 1 ;;
           esac
@@ -58,7 +58,7 @@ jobs:
           cp main.tex llncs.cls "$target/"
           git -C "$target" add -- main.tex llncs.cls
           if ! git -C "$target" diff --cached --quiet; then
-            git -C "$target" -c user.name=guluchen -c user.email=3191681+guluchen@users.noreply.github.com commit -m "Set author to Yu-Fang Chen and affiliation"
+            git -C "$target" -c user.name=guluchen -c user.email=3191681+guluchen@users.noreply.github.com commit -m "Simplify ancilla safety definitions as approved"
             live="$(git -C "$target" ls-remote origin "refs/heads/$branch" | cut -f1)"
             test "$live" = "$before" || { echo "::error::Overleaf revision changed. No files pushed."; exit 1; }
             git -C "$target" push origin "HEAD:refs/heads/$branch"
@@ -68,4 +68,4 @@ jobs:
           test "$(git -C "$target" rev-parse FETCH_HEAD:main.tex)" = "$(git hash-object main.tex)"
           test "$(git -C "$target" rev-parse FETCH_HEAD:llncs.cls)" = "$(git hash-object llncs.cls)"
           echo "Verified Overleaf revision: $(git -C "$target" rev-parse FETCH_HEAD)"
-          echo "Approved GitHub source: 1a2f5ee5fb42727b8d249a2cee67a170d8851f93"
+          echo "Approved GitHub source: 3066d2da33746a91e8e00782d6483c91264fd174"
