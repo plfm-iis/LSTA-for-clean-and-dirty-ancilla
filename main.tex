@@ -1,14 +1,13 @@
-\documentclass{article}
+\documentclass[runningheads]{llncs}
 \usepackage{graphicx} % Required for inserting images
 
-\usepackage{amsmath,amssymb,amsthm}
+\usepackage{amsmath,amssymb}
 \usepackage{url}
-\theoremstyle{definition}
-\newtheorem{definition}{Definition}[section]
 
 \title{LSTA for clean and dirty ancilla}
-\author{plfm.iis }
-\date{October 2026}
+\author{plfm.iis}
+\authorrunning{plfm.iis}
+\institute{Author affiliations to be completed}
 
 \begin{document}
 
@@ -25,7 +24,7 @@ An $n$-qubit vector $\lvert\psi\rangle=\sum_{b\in\{0,1\}^n}
 Internal nodes at depth $i-1$ carry $x_i$; the leaf reached by $b$ carries
 $\alpha_b$. Left and right edges encode $0$ and $1$, respectively.
 
-\begin{definition}[Level-synchronized tree automaton]
+\begin{definition}[LSTA]
 Following~\cite{lsta}, an LSTA is a tuple
 $\mathcal A=(Q,\Sigma,\Delta,\mathcal R)$, with finite state set $Q$,
 root states $\mathcal R\subseteq Q$, ranked alphabet
@@ -90,17 +89,19 @@ $V$ on $\mathcal H_D$ such that
 Equivalently, the same $V$ satisfies
 \[
  U(\lvert\psi\rangle_D\otimes\lvert\phi\rangle_A)
- =V\lvert\psi\rangle_D\otimes\lvert\phi\rangle_A
- \quad\text{for all }\lvert\psi\rangle_D,\lvert\phi\rangle_A.
+ =V\lvert\psi\rangle_D\otimes\lvert\phi\rangle_A.
 \]
+for all $\lvert\psi\rangle_D$ and $\lvert\phi\rangle_A$.
 \end{definition}
 
 By linearity, this condition also covers entangled inputs.
 For any untouched reference register $E$ and density operator $\rho_{DAE}$,
 \[
- (U\otimes I_E)\rho_{DAE}(U^\dagger\otimes I_E)
- =(V\otimes I_A\otimes I_E)\rho_{DAE}
+ \begin{aligned}
+ &(U\otimes I_E)\rho_{DAE}(U^\dagger\otimes I_E)
+ \\ &\quad=(V\otimes I_A\otimes I_E)\rho_{DAE}
   (V^\dagger\otimes I_A\otimes I_E).
+ \end{aligned}
 \]
 In particular, the joint reduced state of $AE$ is preserved.
 Restoring only the basis values of $A$ is insufficient:
