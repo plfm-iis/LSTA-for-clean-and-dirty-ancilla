@@ -1,0 +1,70 @@
+name: Apply approved LNCS definitions to Overleaf
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/apply-lncs-definitions.yml]
+permissions:
+  contents: read
+concurrency:
+  group: overleaf-bridge
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 8cad60e8f00f500b0b9a37eec58d12af6cbec6e6
+          persist-credentials: false
+      - name: Apply only approved files with conflict protection
+        env:
+          OVERLEAF_GIT_TOKEN: ${{ secrets.OVERLEAF_GIT_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$OVERLEAF_GIT_TOKEN" || { echo "::error::Existing OVERLEAF_GIT_TOKEN is unavailable to this repository."; exit 1; }
+          bridge_askpass="$(mktemp)"
+          trap 'rm -f "$bridge_askpass"' EXIT
+          cat > "$bridge_askpass" <<'SH'
+          #!/bin/sh
+          case "$1" in
+            *Username*) printf '%s\n' git ;;
+            *Password*) printf '%s\n' "$OVERLEAF_GIT_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          SH
+          chmod 700 "$bridge_askpass"
+          export GIT_ASKPASS="$bridge_askpass" GIT_TERMINAL_PROMPT=0
+          target="$RUNNER_TEMP/overleaf-ancilla"
+          git clone https://git@git.overleaf.com/6ae452654cdba3e97742a7a9 "$target"
+          before="$(git -C "$target" rev-parse HEAD)"
+          branch="$(git -C "$target" symbolic-ref --short HEAD)"
+          echo "Overleaf before: $before"
+          test -f "$target/main.tex" && test ! -L "$target/main.tex"
+          old="$(git -C "$target" hash-object main.tex)"
+          approved="$(git hash-object main.tex)"
+          case "$old" in
+            ef12643edcf34621e43ae4e6c9ba1cd22a687a9c|b81a7f231f46e80035d79d6e1544cd310b1ff09f) ;;
+            "$approved") ;;
+            *) echo "::error::Overleaf main.tex has concurrent or unreviewed changes. No files pushed."; exit 1 ;;
+          esac
+          if test -e "$target/llncs.cls" || test -L "$target/llncs.cls"; then
+            test -f "$target/llncs.cls" && test ! -L "$target/llncs.cls"
+            cmp llncs.cls "$target/llncs.cls" || { echo "::error::Existing Overleaf class differs. No files pushed."; exit 1; }
+          fi
+          cp main.tex llncs.cls "$target/"
+          git -C "$target" add -- main.tex llncs.cls
+          if ! git -C "$target" diff --cached --quiet; then
+            git -C "$target" -c user.name=guluchen -c user.email=3191681+guluchen@users.noreply.github.com commit -m "Add ancilla definitions and LNCS format"
+            live="$(git -C "$target" ls-remote origin "refs/heads/$branch" | cut -f1)"
+            test "$live" = "$before" || { echo "::error::Overleaf revision changed. No files pushed."; exit 1; }
+            git -C "$target" push origin "HEAD:refs/heads/$branch"
+          fi
+          git -C "$target" fetch origin "$branch"
+          test "$(git -C "$target" rev-parse HEAD)" = "$(git -C "$target" rev-parse FETCH_HEAD)"
+          test "$(git -C "$target" rev-parse FETCH_HEAD:main.tex)" = "$(git hash-object main.tex)"
+          test "$(git -C "$target" rev-parse FETCH_HEAD:llncs.cls)" = "$(git hash-object llncs.cls)"
+          echo "Verified Overleaf revision: $(git -C "$target" rev-parse FETCH_HEAD)"
+          echo "Approved GitHub source: 8cad60e8f00f500b0b9a37eec58d12af6cbec6e6"
