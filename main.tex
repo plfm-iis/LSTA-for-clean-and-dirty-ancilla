@@ -1,6 +1,11 @@
 \documentclass{article}
 \usepackage{graphicx} % Required for inserting images
 
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{url}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
 \title{LSTA for clean and dirty ancilla}
 \author{plfm.iis }
 \date{October 2026}
@@ -11,4 +16,121 @@
 
 \section{Introduction}
 
+\section{Preliminaries}
+
+\subsection{Level-synchronized tree automata}
+
+An $n$-qubit vector $\lvert\psi\rangle=\sum_{b\in\{0,1\}^n}
+\alpha_b\lvert b\rangle$ is encoded by a perfect binary tree of depth $n$.
+Internal nodes at depth $i-1$ carry $x_i$; the leaf reached by $b$ carries
+$\alpha_b$. Left and right edges encode $0$ and $1$, respectively.
+
+\begin{definition}[Level-synchronized tree automaton]
+Following~\cite{lsta}, an LSTA is a tuple
+$\mathcal A=(Q,\Sigma,\Delta,\mathcal R)$, with finite state set $Q$,
+root states $\mathcal R\subseteq Q$, ranked alphabet
+$\Sigma=\Sigma_2\uplus\Sigma_0$, and finite transition set $\Delta$.
+Transitions have the forms
+\[
+ q\xrightarrow{C} f(q_0,q_1)
+ \qquad\text{or}\qquad
+ q\xrightarrow{C} a,
+\]
+where $f\in\Sigma_2$, $a\in\Sigma_0$, $q,q_0,q_1\in Q$, and
+$C\subseteq\mathbb N_0$ is finite.
+Distinct transitions with the same source state have disjoint choice sets.
+\end{definition}
+
+A run assigns a matching transition to every node, respecting the ordered
+child states. It is accepting if its root state belongs to $\mathcal R$
+and, at every depth $d$ (including leaves),
+\[
+ \bigcap_{\substack{v\text{ a node}\\ |v|=d}} C_{\rho(v)}
+ \neq\varnothing.
+\]
+Thus all transitions at one level share a choice; different levels may
+use different choices. The language $\mathcal L(\mathcal A)$ consists of
+trees admitting accepting runs. For quantum states, we use qubit labels
+internally and complex amplitudes at leaves, and restrict to normalized
+vectors with the prescribed qubit order.
+
+\subsection{Clean and dirty ancillas}
+
+Let $D$ be an $n$-qubit data register, $A$ an $m$-qubit ancilla register,
+and $U$ a unitary on $\mathcal H_D\otimes\mathcal H_A$.
+An ancilla provides temporary workspace rather than part of the intended
+output. We distinguish its initialization from the condition required for
+safe reuse~\cite{gidney,dirty}.
+
+\begin{definition}[Clean ancilla and clean-ancilla safety]
+A clean ancilla register is initialized to the known state
+$\lvert 0^m\rangle_A$, uncorrelated with the remaining system.
+We say that $U$ safely returns this register if there exists a unitary
+$V$ on $\mathcal H_D$ such that, for every
+$\lvert\psi\rangle_D\in\mathcal H_D$,
+\begin{equation}\label{eq:clean-safety}
+ U(\lvert\psi\rangle_D\otimes\lvert 0^m\rangle_A)
+ =V\lvert\psi\rangle_D\otimes\lvert 0^m\rangle_A.
+\end{equation}
+\end{definition}
+
+The initialization alone makes the ancilla clean; returning it to zero
+is the additional safety property considered here.
+Equation~\eqref{eq:clean-safety} constrains $U$ only on the subspace
+$\mathcal H_D\otimes\operatorname{span}\{\lvert0^m\rangle_A\}$.
+
+\begin{definition}[Dirty ancilla and dirty-ancilla safety]
+A dirty ancilla register is borrowed in an arbitrary unknown state,
+possibly entangled with other registers.
+We say that $U$ safely returns this register if there exists a unitary
+$V$ on $\mathcal H_D$ such that
+\begin{equation}\label{eq:dirty-safety}
+ U=V\otimes I_A.
+\end{equation}
+Equivalently, the same $V$ satisfies
+\[
+ U(\lvert\psi\rangle_D\otimes\lvert\phi\rangle_A)
+ =V\lvert\psi\rangle_D\otimes\lvert\phi\rangle_A
+ \quad\text{for all }\lvert\psi\rangle_D,\lvert\phi\rangle_A.
+\]
+\end{definition}
+
+By linearity, this condition also covers entangled inputs.
+For any untouched reference register $E$ and density operator $\rho_{DAE}$,
+\[
+ (U\otimes I_E)\rho_{DAE}(U^\dagger\otimes I_E)
+ =(V\otimes I_A\otimes I_E)\rho_{DAE}
+  (V^\dagger\otimes I_A\otimes I_E).
+\]
+In particular, the joint reduced state of $AE$ is preserved.
+Restoring only the basis values of $A$ is insufficient:
+$I_D\otimes Z_A$ leaves those values unchanged but maps
+$\lvert+\rangle_A$ to $\lvert-\rangle_A$.
+Dirty-ancilla safety implies clean-ancilla safety, whereas the converse
+fails by this example. The existential $V$ absorbs any overall global phase.
+If a target operation is specified, its correctness is a separate
+requirement on $V$.
+
+\begin{thebibliography}{9}
+\bibitem{lsta}
+Parosh Aziz Abdulla et al.
+\emph{Verifying Quantum Circuits with Level-Synchronized Tree Automata
+(Technical Report)}.
+arXiv:2410.18540, 2024.
+\url{https://arxiv.org/abs/2410.18540}.
+
+\bibitem{gidney}
+Craig Gidney.
+\emph{Factoring with $n+2$ clean qubits and $n-1$ dirty qubits}.
+arXiv:1706.07884, 2017.
+\url{https://arxiv.org/abs/1706.07884}.
+
+\bibitem{dirty}
+Bonan Su, Li Zhou, Yuan Feng, and Mingsheng Ying.
+\emph{Borrowing Dirty Qubits in Quantum Programs}.
+arXiv:2508.17190, 2025.
+\url{https://arxiv.org/abs/2508.17190}.
+\end{thebibliography}
+
 \end{document}
+
